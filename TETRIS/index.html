@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="utf-8"></head>
+<body>
+<h1 id="st">Music Select</h1>
+<p class="btn">
+    <button id="btn0" onclick="test1()">Tetris_type_A</button>
+    <button id="btn1" onclick="test1()">Tetris_type_B</button>
+</p>
+
+<canvas id="can"></canvas>
+
+<script>
+
+document.title="テ、トリス"
+
+function tetris(){
+    document.querySelector("#st").remove();
+    
+
+
+
+//ゲームオバー
+let game_over=false
+
+//フィールドサイズ
+const field_col=10;
+const field_row=20;
+let can=document.getElementById("can");
+let coon=can.getContext("2d");
+
+
+
+
+//テトリミノのサイズ
+tetri_size=4
+//ブロックのサイズ
+let blk=30;
+
+
+
+
+//スクリーン
+const scrw=blk*field_col;
+const scrh=blk*field_row;
+
+
+
+
+//フィールド
+let field=[];
+
+
+
+for(let y=0 ; y<field_row ;y++)
+{
+    field[y]=[];
+
+    for(let x=0 ; x<field_col ;x++)
+    {
+        field[y][x]=0
+        
+    }
+
+};
+
+
+
+
+
+
+//テトリス落ちる速度
+let Dtime=299;
+
+//テトリス落ちる処理
+setInterval(tetri_Drop,Dtime);
+
+//テトリススコア
+
+
+
+lc=0;
+
+    
+//テトリミノが映る画面
+can.width=scrw;
+can.height=scrh;
+can.style.border="10px solid #61ecdb";
+
+//テトリスの色
+const tetris_color=
+[
+"#000",//空っぽ
+"#ff0000",//赤
+"#0000ff",//青
+"#008000",//緑
+"#ffa500",//橙
+"#ffd700",//黄
+"#800080",//紫
+"#00bfff",//水
+"#ff69b4"//桃
+]
+
+//テトリミノブロックの形
+const tetri_types=[
+
+[],//から
+
+[
+        [0,0,0,0],    
+        [1,1,1,1],
+        [0,0,0,0],
+        [0,0,0,0]
+],
+
+[
+        [0,1,0,0],    
+        [0,1,0,0],
+        [0,1,1,0],
+        [0,0,0,0]
+],　
+
+[
+        [0,0,1,0],    
+        [0,0,1,0],
+        [0,1,1,0],
+        [0,0,0,0]
+],　
+
+[
+        [0,0,0,0],    
+        [0,1,1,0],
+        [0,1,1,0],
+        [0,0,0,0]
+],　
+
+[
+        [0,0,0,0],    
+        [1,1,0,0],
+        [0,1,1,0],
+        [0,0,0,0]
+],　
+
+[
+        [0,0,0,0],    
+        [0,0,1,1],
+        [0,1,1,0],
+        [0,0,0,0]
+],　
+
+[
+        [0,0,0,0],    
+        [0,0,1,0],
+        [0,1,1,1],
+        [0,0,0,0]
+],
+
+[       
+        [0,1,0,0],    
+        [0,1,0,0],
+        [0,1,0,0],
+        [0,1,0,0]
+
+
+
+]
+]
+
+const siyoki_x=field_col/2-tetri_size/2;
+const siyoki_y=0;
+
+
+//テトリミノの座標
+let tetx=siyoki_x;
+let tety=siyoki_y;
+
+//テトリミノ形
+let tett=Math.floor(Math.random()*(tetri_types.length-1))+1;
+
+let tetri=tetri_types[tett];
+
+
+
+
+//テトリス描画
+//わからん
+dwfil();
+dwTetri();
+//draw single
+function blk_single(x,y,c)
+{
+    let px=x*blk;
+    let py=y*blk;
+                
+                //テトリミノ描画
+                coon.fillStyle=tetris_color[c];
+                coon.fillRect(px,py,blk,blk);
+                //テトリミノの黒線を描画
+                coon.strokeStyle="black";
+                coon.strokeRect(px,py,blk,blk);
+                
+                
+                
+};
+
+//フィールドの範囲
+function dwfil()
+{
+    coon.clearRect(0,0,scrw,scrh);
+
+    for(let y=0 ; y<field_row ;y++)
+    {
+        for(let x=0; x<field_col;x++)
+        {
+            if(field[y][x])　
+            {            
+                blk_single(x,y,field[y][x]);//field[y][x]は[c]=1の色になる
+            }
+        }
+    }
+   
+};
+
+
+//テトリス描画の関数
+function dwTetri()
+{
+    
+
+    for(let y=0 ; y<tetri_size ;y++)
+    {
+        for(let x=0; x<tetri_size;x++)
+        {
+            if(tetri[y][x]==1)
+            {            
+                blk_single(tetx+x,tety+y,tett);
+            }
+        }
+    } 
+
+    if(game_over)
+    {   
+        let ov="GAME OVER"
+        coon.font="40px'ＭＳ　ゴシック'";
+        let mj=coon.measureText(ov).width;
+        let x=scrw/2-mj/2;
+        let y=scrh/2-20;
+        coon.lineWidth=4;
+        coon.strokeStyle="blue"
+        coon.strokeText(ov,x,y);
+        coon.fillStyle="red";
+        coon.fillText(ov,x,y);
+
+
+    }
+};
+
+dwTetri();
+dwfil();
+
+//テトリミノの当たり判定　
+function chkmove(mx,my,nwt)
+{
+    if(nwt==undefined)nwt=tetri;//もしchkmoveでnwtがなかったら　nwtをtetriにする
+    
+    for(let y=0 ; y<tetri_size;y++)
+    {   
+        
+
+        for(let x=0; x<tetri_size;x++)
+        {   //ここわからん        
+            
+
+            if(nwt[y][x])
+            {   //↓フィールドにテトリミノがある場合
+                let nx=tetx+mx+x;
+                let ny=tety+my+y;
+                
+                //0より座標が小さい場合とフィールドの数値を以上の数値を出すと止まる
+                if(
+                ny<0||
+                nx<0||
+                ny>=field_row||
+                nx>=field_col||
+                field[ny][nx]
+                )
+                {
+                    return false
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
+
+
+
+//テトリミノの回転
+//わからん
+function kaiten(tetri_in)
+{
+    if(tetri_in=undefined)tetri_in=tetri;
+
+    let nwt=[];
+
+    for(let y=0 ; y<tetri_size;y++)
+    {   
+        nwt[y]=[];
+        
+        for(let x=0; x<tetri_size;x++)
+        {  
+           nwt[y][x]=tetri[tetri_size-x-1][y];
+           
+        } 
+
+    }
+
+    return nwt;
+}
+
+
+
+
+//テトリミノ固定
+function fixTetri()
+{
+    for(let y=0 ; y<tetri_size;y++)
+    {   
+        
+        
+        for(let x=0; x<tetri_size;x++)
+        {  
+
+            if(tetri[y][x]) 
+            {
+               field[tety+y][tetx+x]=tett;
+            }
+        } 
+    }
+
+    
+}
+
+
+
+
+//ラインがそろったら消す
+function chk_line()
+{
+    
+
+
+
+    for(let y=0 ; y<field_row;y++)
+    {   
+        
+        let flag=true;
+        
+        for(let x=0; x<field_col;x++)
+        {  
+
+            
+            if(!field[y][x]) 
+            {
+                flag=false;
+                break;
+            }
+        }
+        if(flag)
+        {
+            lc++;
+            
+            var se=new Audio('../se/tetris_kesu1.wav');
+            se.play()
+
+            if(lc==10)
+            {
+                var linec=new Audio('../se/tetris_score.wav')
+                linec.play();
+            }
+            
+            
+            for(let ny= y ;ny>0;ny--)
+            {
+                for(let nx=0;nx<field_col;nx++)
+                {
+                    field[ny][nx]=field[ny-1][nx]
+
+                    
+                    
+                }
+            }
+        }
+        
+    }
+    
+    console.log("ラインカウント:"+lc)
+
+};
+
+
+
+
+//テトリミノを落とす
+function tetri_Drop()
+{  
+    if(game_over)return;
+    if(chkmove(0,1))tety++
+    
+    else
+    {
+        
+        fixTetri();
+        chk_line();
+        
+
+
+        //テトリスランダム
+        tett=Math.floor(Math.random()*(tetri_types.length-1))+1;
+        tetri=tetri_types[tett]; 
+        tetx=siyoki_x;
+        tety=siyoki_y;
+        
+        if(!chkmove (0,0))
+        {
+            game_over=true;
+        }
+
+    }
+    
+    
+    dwfil()
+    dwTetri();
+
+}
+
+//キーボード押されたときの処理
+document.onkeydown=function(e)
+{
+
+  
+    
+    var music =new Audio('../se/tetris_move.wav'); 
+    var ots=new Audio('../se/tetris_otsu.wav')
+    if(game_over)return;
+
+
+    switch(e.keyCode)
+    {
+       
+        case 37://左
+        //chkmoveで動けることを確認した後tetxやtetyの数値を変える
+        if(chkmove(-1,0))tetx--; 
+        music.play();
+        break;
+        
+        case 38://上　chkmoveがtrueの間tetyを足し続ける
+        while(chkmove(0,1))tety++;
+        ots.play();
+        
+        break;
+        
+        case 39://右
+        if(chkmove(1,0))tetx++;
+        music.play();
+       
+
+        break;
+        
+        case 40://下
+        if(chkmove(0,1))tety++;
+        music.play();
+        
+        break;
+
+        case 32://スペース
+       let right=kaiten();
+        if(chkmove(0,0,right) )
+        tetri=kaiten();
+        music.play();
+       
+        break;
+    
+        case 16://シフト
+        let left=kaiten();
+        left=kaiten(left)
+        left=kaiten(left)
+        
+        if(chkmove(0,0,left) )
+        {
+            tetri=kaiten();
+            tetri=kaiten();
+            tetri=kaiten();
+            
+
+        }
+       
+       
+        
+
+        break;
+         
+    }
+
+    dwfil();
+    dwTetri();
+}
+
+ks();
+
+
+};
+
+
+
+
+//音楽再生
+//音楽ファイル
+let bgms=[new Audio('../bgm/Tetris_Type_A.mp3') , new Audio('../bgm/Tetris_Type_B.mp3')];
+let btns=[document.getElementById("btn0"),document.getElementById("btn1")];
+
+//MusicSlelect 最初の文字
+var title=document.getElementById("st");
+
+function test1(){
+
+    btns.length.remove();
+    play1();
+    tetris();
+}
+
+function test2()
+{
+    btns.length.remove();
+    play2();
+    tetris();
+
+}
+
+    
+    
+function play1(){
+
+bgms[0].play();
+bgms[0].loop=true;
+
+
+};
+
+function play2(){
+
+bgms[1].play();
+bgms[1].loop=true;
+};
+
+let play_m=[play1(),play2()];
+
+
+
+
+for(i=0 ; i<=btns.length ; i++){
+    
+
+
+}
+
+
+
+
+
+
+</script>
+</body>
+</html>
